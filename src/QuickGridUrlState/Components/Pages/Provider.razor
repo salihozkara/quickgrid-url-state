@@ -1,0 +1,49 @@
+@page "/provider"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using QuickGridUrlState.Data
+@inject PersonStore Store
+@inject NavigationManager Nav
+@inject ILogger<Provider> Logger
+
+<PageTitle>ItemsProvider — QuickGrid URL state</PageTitle>
+
+<h1>Server-side paging via <code>GridItemsProvider</code></h1>
+
+<p class="lede">Current address: <code>@Nav.Uri</code></p>
+
+<p>
+    Each request is logged to the server console: start index, page size, sort.
+    Only one page of rows is ever materialized.
+</p>
+
+<QuickGrid ItemsProvider="@peopleProvider" Pagination="@pagination" Class="people-grid">
+    <PropertyColumn Property="@(p => p.Id)" Sortable="true" Title="Id" />
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Name" />
+    <PropertyColumn Property="@(p => p.Country)" Sortable="true" Title="Country" />
+    <PropertyColumn Property="@(p => p.Age)" Sortable="true" Title="Age" />
+</QuickGrid>
+
+<Paginator State="@pagination" />
+
+@code {
+    private readonly PaginationState pagination = new() { ItemsPerPage = 10 };
+    private GridItemsProvider<Person> peopleProvider = default!;
+
+    protected override void OnInitialized()
+    {
+        peopleProvider = async request =>
+        {
+            Logger.LogInformation(
+                "ItemsProvider called: StartIndex={StartIndex} Count={Count} Sort=[{Sort}]",
+                request.StartIndex,
+                request.Count,
+                string.Join(", ", request.GetSortByProperties().Select(s => $"{s.PropertyName} {s.Direction}")));
+
+            var sorted = request.ApplySorting(Store.People.AsQueryable());
+            var slice = sorted.Skip(request.StartIndex).Take(request.Count ?? 10).ToList();
+
+            await Task.Delay(150, request.CancellationToken); // pretend this was a database
+            return GridItemsProviderResult.From(slice, Store.People.Count);
+        };
+    }
+}

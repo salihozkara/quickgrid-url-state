@@ -1,0 +1,38 @@
+@page "/multi"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using QuickGridUrlState.Data
+@inject PersonStore Store
+@inject NavigationManager Nav
+
+<PageTitle>Two grids — QuickGrid URL state</PageTitle>
+
+<h1>Two grids, one address bar</h1>
+
+<p class="lede">Current address: <code>@Nav.Uri</code></p>
+
+<h2>People</h2>
+<QuickGrid Items="@Store.People.AsQueryable()" Pagination="@peoplePagination" Class="people-grid">
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Name" />
+    <PropertyColumn Property="@(p => p.Country)" Sortable="true" Title="Country" />
+</QuickGrid>
+<Paginator State="@peoplePagination" />
+
+<h2>Countries</h2>
+<QuickGrid Items="@Countries" Pagination="@countryPagination"
+           QueryParameterNameOptions="@(new QueryParameterNameOptions("c_"))" Class="people-grid">
+    <PropertyColumn Property="@(c => c.Name)" Sortable="true" Title="Name" />
+    <PropertyColumn Property="@(c => c.People)" Sortable="true" Title="People" />
+</QuickGrid>
+<Paginator State="@countryPagination" />
+
+@code {
+    private readonly PaginationState peoplePagination = new() { ItemsPerPage = 10 };
+    private readonly PaginationState countryPagination = new() { ItemsPerPage = 5 };
+
+    private IQueryable<CountrySummary> Countries => Store.People
+        .GroupBy(p => p.Country)
+        .Select(g => new CountrySummary(g.Key, g.Count()))
+        .AsQueryable();
+
+    public sealed record CountrySummary(string Name, int People);
+}

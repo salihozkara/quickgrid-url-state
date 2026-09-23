@@ -1,0 +1,47 @@
+@page "/people"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using QuickGridUrlState.Data
+@inject PersonStore Store
+@inject NavigationManager Nav
+
+<PageTitle>People — QuickGrid URL state</PageTitle>
+
+<h1>People</h1>
+
+<p class="lede">
+    Sortable columns and the paginator are ordinary <code>&lt;a&gt;</code> links.
+    Current address: <code>@Nav.Uri</code>
+</p>
+
+<div class="filters">
+    Filter:
+    <a href="@FilterHref(null)">All</a>
+    @foreach (var c in Store.People.Select(p => p.Country).Distinct().Order())
+    {
+        <a href="@FilterHref(c)" class="@(c == Country ? "active" : null)">@c</a>
+    }
+</div>
+
+<QuickGrid Items="@FilteredPeople" Pagination="@pagination" Class="people-grid">
+    <PropertyColumn Property="@(p => p.Id)" Sortable="true" Title="Id" />
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Name" />
+    <PropertyColumn Property="@(p => p.Country)" Sortable="true" Title="Country" />
+    <PropertyColumn Property="@(p => p.Age)" Sortable="true" Title="Age" />
+    <PropertyColumn Property="@(p => p.StartDate)" Sortable="true" Title="Start date" Format="yyyy-MM-dd" />
+</QuickGrid>
+
+<Paginator State="@pagination" />
+
+@code {
+    private readonly PaginationState pagination = new() { ItemsPerPage = 10 };
+
+    [SupplyParameterFromQuery(Name = "country")]
+    public string? Country { get; set; }
+
+    private IQueryable<Person> FilteredPeople => Store.People
+        .Where(p => Country is null || p.Country == Country)
+        .AsQueryable();
+
+    private string FilterHref(string? country) =>
+        country is null ? "/people" : $"/people?country={Uri.EscapeDataString(country)}";
+}

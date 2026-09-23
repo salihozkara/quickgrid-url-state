@@ -1,0 +1,29 @@
+@page "/people-interactive"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using QuickGridUrlState.Data
+@inject PersonStore Store
+@inject NavigationManager Nav
+
+<PageTitle>People (interactive) — QuickGrid URL state</PageTitle>
+
+<h1>People — interactive server</h1>
+
+<p class="lede">
+    Same grid, but this page becomes interactive after prerendering.
+    The URL contract is identical: <code>@Nav.Uri</code>
+</p>
+
+<QuickGrid Items="@Store.People.AsQueryable()" Pagination="@pagination" Class="people-grid">
+    <PropertyColumn Property="@(p => p.Id)" Sortable="true" Title="Id" />
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Name" />
+    <PropertyColumn Property="@(p => p.Country)" Sortable="true" Title="Country" />
+    <PropertyColumn Property="@(p => p.Age)" Sortable="true" Title="Age" />
+    <PropertyColumn Property="@(p => p.StartDate)" Sortable="true" Title="Start date" Format="yyyy-MM-dd" />
+</QuickGrid>
+
+<Paginator State="@pagination" />
+
+@code {
+    private readonly PaginationState pagination = new() { ItemsPerPage = 10 };
+}

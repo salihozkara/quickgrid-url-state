@@ -1,0 +1,17 @@
+﻿@page "/"
+
+<PageTitle>QuickGrid URL state in .NET 11</PageTitle>
+
+<h1>QuickGrid URL state in .NET 11</h1>
+
+<p>
+    A static-SSR-only Blazor app (no interactivity mode configured for the pages below, except where
+    noted). Sorting and paging work through plain links and query string parameters.
+</p>
+
+<ul>
+    <li><a href="/people">/people</a> — single grid, sortable columns, paginator, plus an app-owned <code>?country=</code> filter</li>
+    <li><a href="/provider">/provider</a> — the same grid driven by <code>GridItemsProvider</code> (server-side paging)</li>
+    <li><a href="/multi">/multi</a> — two grids on one page, second grid using a <code>c_</code> parameter prefix</li>
+    <li><a href="/people-interactive">/people-interactive</a> — the same grid on an interactive-server page</li>
+</ul>
